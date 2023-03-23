@@ -70,28 +70,28 @@ describe('Crowdsale', () => {
         a = await token.balanceOf(crowdsale.address)
         b = tokens(999990)
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
       it('user account increases', async ()=> {
         let a,b
         a = await token.balanceOf(user1.address)
         b = amount
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
       it('updates contracts ether balance', async ()=> {
         let a,b
         a = await ethers.provider.getBalance(crowdsale.address)
         b = amount
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
       it('updates tokensSold', async ()=> {
         let a,b
         a = await crowdsale.tokensSold()
         b = amount
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
       // it('emits a buy event', async () => {
       //   await expect(transaction).to.emit(crowdsale, 'Buy')
@@ -137,18 +137,46 @@ describe('Crowdsale', () => {
         a = await ethers.provider.getBalance(crowdsale.address)
         b = amount
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
       it('updates user token Balance', async ()=> {
         let a,b
         a = await token.balanceOf(user1.address)
         b = amount
         expect(a).to.eq(b)
-        console.log(a*1e-18)
+        // console.log(a*1e-18)
       })
     })
   })
 
+  describe('Finalizing', () => {
+    let transaction, amount, value
+    amount = tokens(10)
+    value = ether(10)
+
+    describe('Success', () => {
+      beforeEach(async() => {
+        transaction =
+          await crowdsale.connect(user1)
+          .buyTokens(amount, {value: value})
+        await transaction.wait()
+
+        transaction =
+          await crowdsale.connect(deployer)
+          .finalize()
+        await transaction.wait()
+      })
+
+      it('transfers remaining tokens to the owner', async() => {
+        expect(await token.balanceOf(crowdsale.address)).to.eq(0)
+        expect(await token.balanceOf(deployer.address)).to.eq(tokens(999990))
+      })
+    })
+
+    describe('Failure', () => {
+
+    })
+  })
 })
 
 

@@ -5,6 +5,7 @@ import "./Token.sol";
 
 contract Crowdsale {
 
+	address public owner;
 	Token public token;
 	uint256 public price;
 	uint256 public maxTokens;
@@ -17,6 +18,7 @@ contract Crowdsale {
 		uint256 _price,
 		uint256 _maxTokens
 	) {
+		owner = msg.sender;
 		token = _token;
 		price = _price;
 		maxTokens = _maxTokens;
@@ -35,6 +37,14 @@ contract Crowdsale {
 		tokensSold += _amount;
 
 		emit Buy(_amount, msg.sender);
+	}
+
+	function finalize() public {
+		//Send ETH to the Creator
+		require(token.transfer(owner, token.balanceOf(address(this))));
+		uint256 value = address(this).balance;
+		(bool sent, ) = owner.call{value: value}("");
+		require(sent);
 	}
 
 
