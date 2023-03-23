@@ -149,6 +149,40 @@ describe('Crowdsale', () => {
     })
   })
 
+  describe('Updating Price', () => {
+    let transaction
+    let price = ether(2)
+
+    describe('Success', ()=> {
+      beforeEach(async()=> {
+        transaction =
+          await crowdsale.connect(deployer)
+          .setPrice(ether(2))
+        await transaction.wait()
+      })
+
+      it('updates the price', async() => {
+        let a = await crowdsale.price()
+        let b = ether(2)
+        expect(a).to.eq(b)
+      })
+    })
+
+    describe('Failure', () => {
+      it('prevents non-owner from changing price', async()=>{
+
+        let a,b,c
+        a = user1
+        b = deployer
+        c = crowdsale.connect(a).setPrice(price)
+        await expect(c).to.be.reverted
+      })
+    })
+
+
+  })
+  
+  
   describe('Finalizing', () => {
     let transaction, amount, value
     amount = tokens(10)
@@ -174,10 +208,26 @@ describe('Crowdsale', () => {
       it('transfers ETH to the owner', async() => {
         expect(await ethers.provider.getBalance(crowdsale.address)).to.eq(0)
       })
+      it('emits a Finalize event', async () => {
+        let a,b,c,d,e
+        a = transaction // beforeEach async name
+        b = crowdsale // b,c : Contract Name & Event(emit) Name
+        c = 'Finalize'
+        d = amount // d,e <- event Buy(uint256 amount, address buyer)
+        e = value
+        await expect(a).to.emit(b,c).withArgs(d,e)
+      })
+
     })
 
     describe('Failure', () => {
-
+      it('prevents non-owner from finalizing', async()=>{
+        let a,b,c
+        a = user1
+        b = deployer
+        c = crowdsale.connect(a).finalize()
+        await expect(c).to.be.reverted
+      })
     })
   })
 })

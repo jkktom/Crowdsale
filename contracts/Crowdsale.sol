@@ -12,6 +12,7 @@ contract Crowdsale {
 	uint256 public tokensSold;
 
 	event Buy(uint256 amount, address buyer);
+	event Finalize(uint256 tokensSold, uint256 ethRaised);
 
 	constructor(
 		Token _token,
@@ -28,6 +29,12 @@ contract Crowdsale {
 		uint256 amount = msg.value / price;
 		buyTokens(amount*1e18);
 	}
+	modifier onlyOwner(){
+		require(msg.sender == owner,
+			'caller is not the owner'
+			);
+		_;
+	}
 
 	function buyTokens(uint256 _amount) public payable {
 		require(msg.value * 1e18 == price * _amount);
@@ -39,12 +46,19 @@ contract Crowdsale {
 		emit Buy(_amount, msg.sender);
 	}
 
-	function finalize() public {
+	function setPrice(uint256 _price) public onlyOwner{
+		price = _price;
+	}
+
+	function finalize() public onlyOwner {
+		// require(msg.sender == owner);
 		//Send ETH to the Creator
 		require(token.transfer(owner, token.balanceOf(address(this))));
 		uint256 value = address(this).balance;
 		(bool sent, ) = owner.call{value: value}("");
 		require(sent);
+
+		emit Finalize(tokensSold, value);
 	}
 
 
