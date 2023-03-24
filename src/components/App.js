@@ -28,9 +28,10 @@ function App() {
   const [tokensSold, setTokensSold] = useState(0)
 
   const [isLoading, setIsLoading] = useState(true)
+  const [salesOpen, setSalesOpen] = useState(true)
 
   const loadBlockchainData = async () => {
-    // Intiantiate provider
+    // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     setProvider(provider)
 
@@ -52,18 +53,29 @@ function App() {
     setAccountBalance(accountBalance)
 
     // Fetch price
-    const price = ethers.utils.formatUnits(await crowdsale.price(), 18)
+    const price = ethers.utils.formatUnits
+    (await crowdsale.price(), 18)
     setPrice(price)
 
     // Fetch max tokens
-    const maxTokens = ethers.utils.formatUnits(await crowdsale.maxTokens(), 18)
+    const maxTokens = ethers.utils.formatUnits
+    (await crowdsale.maxTokens(), 18)
     setMaxTokens(maxTokens)
 
     // Fetch tokens sold
-    const tokensSold = ethers.utils.formatUnits(await crowdsale.tokensSold(), 18)
+    const tokensSold = ethers.utils.formatUnits
+    (await crowdsale.tokensSold(), 18)
     setTokensSold(tokensSold)
 
+    // Fetch Open or closed sold
+    // const salesOpen = ethers.utils.formatUnits
+    // (await crowdsale.openSale())
+    // setSalesOpen(salesOpen);
+
+    //
+
     setIsLoading(false)
+
   }
 
   useEffect(() => {
@@ -74,25 +86,34 @@ function App() {
 
   return (
     <Container>
-      <Navigation />
+        <Navigation />
 
-      <h1 className='my-4 text-center'>Introducing DApp Token!</h1>
+      {salesOpen ? (
+          <>
+            <h1 className='my-4 text-center'>Introducing DApp Token!</h1>
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <>
+                  <p className='text-center'><strong>Current Price:</strong> {price} ETH</p>
+                  <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
+                  <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
+                </>
+              )}
+              <hr />
 
-      {isLoading ? (
-        <Loading />
+              {account && (
+                <Info account={account} accountBalance={accountBalance} />
+              )}
+          </>  
       ) : (
         <>
-          <p className='text-center'><strong>Current Price:</strong> {price} ETH</p>
-          <Buy provider={provider} price={price} crowdsale={crowdsale} setIsLoading={setIsLoading} />
-          <Progress maxTokens={maxTokens} tokensSold={tokensSold} />
+          <h3 className='my-4 text-center'>Not Yet Open</h3>
+            <h3 className='my-4 text-center'>The Crowdsale starts March 23rd 09:00 UTC!</h3>
         </>
       )}
 
-      <hr />
 
-      {account && (
-        <Info account={account} accountBalance={accountBalance} />
-      )}
     </Container>
   );
 }
